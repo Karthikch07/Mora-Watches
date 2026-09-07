@@ -1,0 +1,8 @@
+.next/
+node_modules/
+.env*
+!.env.example
+work/pnpm-store/
+.codex/
+.agents/
+.DS_Store

@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Chronora Watches</title>
+    <link rel="stylesheet" href="/globals.css" />
+  </head>
+  <body>
+    <main>
+      <header class="siteHeader" aria-label="Chronora navigation">
+        <a class="brand" href="#top" aria-label="Chronora home">
+          <span class="brandMark" aria-hidden="true"></span>
+          Chronora
+        </a>
+        <nav class="navLinks" aria-label="Main navigation">
+          <a href="#store">Store</a>
+          <a href="#cart">Cart</a>
+        </nav>
+        <a class="cartLink" href="#cart" aria-label="Cart with 0 items">
+          Cart
+          <span data-cart-count>0</span>
+        </a>
+      </header>
+
+      <section class="hero" id="top">
+        <div class="heroShade"></div>
+        <div class="heroContent">
+          <p class="eyebrow">Independent Swiss-inspired watchmaking</p>
+          <h1>Chronora</h1>
+          <p class="heroCopy">
+            Mechanical presence, everyday precision, and collectible finishes
+            made for people who notice the seconds.
+          </p>
+          <div class="heroActions">
+            <a class="primaryButton" href="#store">Shop watches</a>
+            <a class="secondaryButton" href="#cart">View cart</a>
+          </div>
+          <div class="heroStats" aria-label="Chronora highlights">
+            <span>6 references</span>
+            <span>Free insured shipping</span>
+            <span>2-year service plan</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="storeSection" id="store" aria-labelledby="store-title">
+        <div class="sectionHeader">
+          <p class="eyebrow">Store</p>
+          <h2 id="store-title">Select your next watch</h2>
+          <div class="filterTabs" role="tablist" aria-label="Watch categories">
+            <button class="isActive" data-filter="All" role="tab" aria-selected="true" type="button">All</button>
+            <button data-filter="Dress" role="tab" aria-selected="false" type="button">Dress</button>
+            <button data-filter="Sport" role="tab" aria-selected="false" type="button">Sport</button>
+            <button data-filter="Field" role="tab" aria-selected="false" type="button">Field</button>
+          </div>
+        </div>
+        <div class="productGrid" data-products></div>
+      </section>
+
+      <section class="cartSection" id="cart" aria-labelledby="cart-title">
+        <div class="cartIntro">
+          <p class="eyebrow">Cart</p>
+          <h2 id="cart-title">Your selection</h2>
+          <p>
+            Review the watches you want and submit the payment request when the
+            set feels right.
+          </p>
+        </div>
+
+        <div class="cartShell">
+          <div class="cartItems" data-cart-items aria-live="polite"></div>
+          <aside class="summaryPanel" aria-label="Order summary">
+            <div class="summaryRow">
+              <span>Subtotal</span>
+              <strong data-subtotal>$0</strong>
+            </div>
+            <div class="summaryRow">
+              <span>Shipping</span>
+              <strong data-shipping>$0</strong>
+            </div>
+            <div class="summaryRow">
+              <span>Estimated tax</span>
+              <strong data-tax>$0</strong>
+            </div>
+            <div class="summaryTotal">
+              <span>Total</span>
+              <strong data-total>$0</strong>
+            </div>
+            <button class="checkoutButton" type="button" data-submit>
+              Submit payment
+            </button>
+            <p class="checkoutMessage" data-message hidden></p>
+          </aside>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const products = [
+        {
+          id: "atlas-chrono",
+          name: "Atlas Chronograph",
+          type: "Sport",
+          price: 680,
+          finish: "Brushed steel",
+          detail: "Tachymeter bezel, sapphire crystal, 42 mm case",
+          position: "0% 0%",
+        },
+        {
+          id: "nocturne-dress",
+          name: "Nocturne Dress",
+          type: "Dress",
+          price: 540,
+          finish: "Black leather",
+          detail: "Slim matte dial, polished baton indices, 38 mm case",
+          position: "50% 0%",
+        },
+        {
+          id: "auric-automatic",
+          name: "Auric Automatic",
+          type: "Dress",
+          price: 920,
+          finish: "Warm gold",
+          detail: "Open caseback, exhibition rotor, 40 mm case",
+          position: "100% 0%",
+        },
+        {
+          id: "field-green",
+          name: "Field Meridian",
+          type: "Field",
+          price: 410,
+          finish: "Olive canvas",
+          detail: "Luminous numerals, screw-down crown, 39 mm case",
+          position: "0% 100%",
+        },
+        {
+          id: "ceramic-diver",
+          name: "Ceramic Diver",
+          type: "Sport",
+          price: 760,
+          finish: "Black ceramic",
+          detail: "Unidirectional bezel, 200 m rating, 41 mm case",
+          position: "50% 100%",
+        },
+        {
+          id: "rose-mesh",
+          name: "Rose Mesh",
+          type: "Dress",
+          price: 590,
+          finish: "Rose gold mesh",
+          detail: "Moonphase-inspired dial, quick-release bracelet, 36 mm case",
+          position: "100% 100%",
+        },
+      ];
+
+      let activeFilter = "All";
+      const cart = {};
+
+      const money = new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+        maximumFractionDigits: 0,
+      });
+
+      const productGrid = document.querySelector("[data-products]");
+      const cartItems = document.querySelector("[data-cart-items]");
+      const message = document.querySelector("[data-message]");
+
+      function formatMoney(value) {
+        return money.format(value);
+      }
+
+      function renderProducts() {
+        const visibleProducts =
+          activeFilter === "All"
+            ? products
+            : products.filter((product) => product.type === activeFilter);
+
+        productGrid.innerHTML = visibleProducts
+          .map(
+            (product) => `
+              <article class="productCard">
+                <div class="productImage" style="background-position: ${product.position}" aria-hidden="true"></div>
+                <div class="productBody">
+                  <div>
+                    <div class="productMeta">
+                      <span>${product.type}</span>
+                      <strong>${formatMoney(product.price)}</strong>
+                    </div>
+                    <h3>${product.name}</h3>
+                    <p>${product.detail}</p>
+                  </div>
+                  <div class="productFooter">
+                    <span>${product.finish}</span>
+                    <button type="button" data-add="${product.id}">
+                      <span aria-hidden="true">+</span>
+                      Add
+                    </button>
+                  </div>
+                </div>
+              </article>
+            `,
+          )
+          .join("");
+      }
+
+      function renderCart() {
+        const lines = products
+          .map((product) => ({ ...product, quantity: cart[product.id] || 0 }))
+          .filter((product) => product.quantity > 0);
+        const itemCount = lines.reduce((sum, item) => sum + item.quantity, 0);
+        const subtotal = lines.reduce(
+          (sum, item) => sum + item.price * item.quantity,
+          0,
+        );
+        const tax = Math.round(subtotal * 0.0825);
+        const total = subtotal + tax;
+
+        document.querySelector("[data-cart-count]").textContent = itemCount;
+        document.querySelector(".cartLink").setAttribute(
+          "aria-label",
+          `Cart with ${itemCount} items`,
+        );
+        document.querySelector("[data-subtotal]").textContent = formatMoney(subtotal);
+        document.querySelector("[data-shipping]").textContent =
+          itemCount > 0 ? "Included" : "$0";
+        document.querySelector("[data-tax]").textContent = formatMoney(tax);
+        document.querySelector("[data-total]").textContent = formatMoney(total);
+
+        cartItems.innerHTML =
+          lines.length === 0
+            ? `
+              <div class="emptyCart">
+                <h3>No watches selected yet</h3>
+                <p>The collection is ready when you are.</p>
+                <a class="secondaryButton" href="#store">Browse store</a>
+              </div>
+            `
+            : lines
+                .map(
+                  (item) => `
+                    <article class="cartItem">
+                      <div class="cartThumb" style="background-position: ${item.position}" aria-hidden="true"></div>
+                      <div class="cartItemCopy">
+                        <span>${item.type}</span>
+                        <h3>${item.name}</h3>
+                        <p>${formatMoney(item.price)} each</p>
+                      </div>
+                      <div class="quantityControl" aria-label="${item.name} quantity">
+                        <button type="button" data-decrease="${item.id}" aria-label="Decrease ${item.name} quantity">-</button>
+                        <strong>${item.quantity}</strong>
+                        <button type="button" data-increase="${item.id}" aria-label="Increase ${item.name} quantity">+</button>
+                      </div>
+                      <strong class="lineTotal">${formatMoney(item.price * item.quantity)}</strong>
+                      <button class="removeButton" type="button" data-remove="${item.id}">Remove</button>
+                    </article>
+                  `,
+                )
+                .join("");
+      }
+
+      function clearMessage() {
+        message.hidden = true;
+        message.textContent = "";
+      }
+
+      document.addEventListener("click", (event) => {
+        const filter = event.target.closest("[data-filter]");
+        const add = event.target.closest("[data-add]");
+        const increase = event.target.closest("[data-increase]");
+        const decrease = event.target.closest("[data-decrease]");
+        const remove = event.target.closest("[data-remove]");
+
+        if (filter) {
+          activeFilter = filter.dataset.filter;
+          document.querySelectorAll("[data-filter]").forEach((button) => {
+            const selected = button.dataset.filter === activeFilter;
+            button.classList.toggle("isActive", selected);
+            button.setAttribute("aria-selected", selected ? "true" : "false");
+          });
+          renderProducts();
+        }
+
+        if (add) {
+          cart[add.dataset.add] = (cart[add.dataset.add] || 0) + 1;
+          clearMessage();
+          renderCart();
+        }
+
+        if (increase) {
+          cart[increase.dataset.increase] = (cart[increase.dataset.increase] || 0) + 1;
+          clearMessage();
+          renderCart();
+        }
+
+        if (decrease) {
+          const id = decrease.dataset.decrease;
+          cart[id] = Math.max((cart[id] || 0) - 1, 0);
+          if (cart[id] === 0) delete cart[id];
+          clearMessage();
+          renderCart();
+        }
+
+        if (remove) {
+          delete cart[remove.dataset.remove];
+          clearMessage();
+          renderCart();
+        }
+      });
+
+      document.querySelector("[data-submit]").addEventListener("click", () => {
+        const itemCount = Object.values(cart).reduce((sum, count) => sum + count, 0);
+        message.hidden = false;
+        message.textContent =
+          itemCount === 0
+            ? "Select a watch before submitting."
+            : "Payment request submitted. Your Chronora selection is reserved.";
+      });
+
+      renderProducts();
+      renderCart();
+    </script>
+  </body>
+</html>
